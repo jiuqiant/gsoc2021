@@ -15,3 +15,13 @@
 licenses(["notice"])
 
 package(default_visibility = ["//mediapipe/examples:__subpackages__"])
+
+
+cc_binary(
+    name = "audio_classification_cpu",
+    deps = [
+        "//mediapipe/examples/desktop:audio_run_graph_main",
+        "//mediapipe/graphs/audio_classification:desktop_calculators",
+    ],
+)
+

@@ -10,3 +10,5 @@ mediapipe/provisioning_profile.mobileprovision
 .DS_Store
 .idea
 .vscode
+
+/abseil-cpp
