@@ -32,6 +32,8 @@ cc_library(
         "//mediapipe/calculators/audio:spectrogram_calculator",
         "//mediapipe/calculators/audio:stabilized_log_calculator",
         "//mediapipe/calculators/audio:time_series_framer_calculator",
+        "//mediapipe/calculators/tensor:inference_calculator",
+        "//mediapipe/calculators/tensor:tensors_to_floats_calculator",
         "//mediapipe/calculators/tensorflow:matrix_to_tensor_calculator",
         "//mediapipe/calculators/tensorflow:unpack_media_sequence_calculator",
         "//mediapipe/calculators/tensorflow:string_to_sequence_example_calculator",
@@ -39,6 +41,8 @@ cc_library(
         "//mediapipe/calculators/tensorflow:tensor_to_vector_float_calculator",
         "//mediapipe/calculators/tensorflow:tensorflow_session_from_saved_model_calculator",
         "//mediapipe/calculators/tflite:tflite_inference_calculator",
+        "//mediapipe/calculators/tflite:tflite_converter_calculator",
+        "//mediapipe/calculators/tflite:tflite_tensors_to_floats_calculator",
         "//mediapipe/calculators/util:top_k_scores_calculator",       
     ],
 )

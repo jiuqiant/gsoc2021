@@ -104,9 +104,9 @@ node {
 
 
 node {
-  calculator: "MatrixToTensorCalculator"
-  input_stream: "log_mel_spectrum_magnitude_with_context"
-  output_stream: "audio_tensors"
+  calculator: "TfLiteConverterCalculator"
+  input_stream: "MATRIX:log_mel_spectrum_magnitude_with_context"
+  output_stream: "TENSORS:audio_tensors"
   node_options: {
     [type.googleapis.com/mediapipe.MatrixToTensorCalculatorOptions] {
       transpose: true
@@ -114,39 +114,23 @@ node {
   }
 }
 
-# node {
-#   calculator: "TensorFlowSessionFromFrozenGraphCalculator"
-#   output_side_packet: "SESSION:session"
-#   node_options: {
-#     [type.googleapis.com/mediapipe.TensorFlowSessionFromFrozenGraphCalculatorOptions]: {
-#       graph_proto_path: "/Users/aniketiq/Downloads/yamnet_1/saved_model.pb"
-#     }
-#   }
-# }
-
+# Runs a TensorFlow  model on CPU that takes an audio tensors and outputs a
+# vector of tensors representing the audio event
 node {
-  calculator: "TensorFlowSessionFromSavedModelCalculator"
-  output_side_packet: "SESSION:session"
+  calculator: "TfLiteInferenceCalculator"
+  input_stream: "TENSORS:audio_tensors"
+  output_stream: "TENSORS:prediction_tensor"
   node_options: {
-    [type.googleapis.com/mediapipe.TensorFlowSessionFromSavedModelCalculatorOptions] {
-      saved_model_path: "mediapipe/models/audio_classification_model/"
+    [type.googleapis.com/mediapipe.TfLiteInferenceCalculatorOptions] {
+      model_path: "mediapipe/models/audio_classification_model/yamnet1_audio_classification.tflite"
     }
   }
 }
 
-# Runs a TensorFlow  model on CPU that takes an audio tensors and outputs a
-# vector of tensors representing the audio event
 node {
-  calculator: "TensorFlowInferenceCalculator"
-  input_side_packet: "SESSION:session"
-  input_stream: "TENSORS:audio_tensors"
-  output_stream: "TENSORS:prediction_tensor"
-}
-
-node {
-  calculator: "TensorToVectorFloatCalculator"
-  input_stream: "prediction_tensor"
-  output_stream: "prediction_vector"
+  calculator: "TfLiteTensorsToFloatsCalculator"
+  input_stream: "TENSORS:prediction_tensor"
+  output_stream: "FLOATS:prediction_vector"
 }
 
 node {
