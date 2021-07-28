@@ -14,6 +14,11 @@
 //
 
 #include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -23,7 +28,6 @@
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status.h"
 
-constexpr char kInputStream[] = "input_audio";
 constexpr char kOutputStream[] = "output_text";
 
 ABSL_FLAG(std::string, calculator_graph_config_file, "",
@@ -31,9 +35,25 @@ ABSL_FLAG(std::string, calculator_graph_config_file, "",
 ABSL_FLAG(std::string, input_side_packets, "",
           "Full path of video to load. "
           "If not provided, attempt to use a mic.");
-ABSL_FLAG(std::string, output_text_path, "",
-          "Full path of where to save result (.txt). "
-          "If not provided, show result in a window.");
+
+ABSL_FLAG(std::string, output_stream_file, "",
+          "The name of the local file to output all packets sent to "
+          "the stream specified with --output_stream. ");
+absl::Status OutputStreamToLocalFile(mediapipe::OutputStreamPoller& poller) {
+    std::ofstream file;
+    file.open(absl::GetFlag(FLAGS_output_stream_file));
+    mediapipe::Packet packet;
+    while (poller.Next(&packet)) {
+        std::string output_data;
+        // if (!absl::GetFlag(FLAGS_strip_timestamps)) {
+        //     absl::StrAppend(&output_data, packet.Timestamp().Value(), ",");
+        // }
+        absl::StrAppend(&output_data, packet.Get<std::string>(), "\n");
+        file << output_data;
+    }
+    file.close();
+    return absl::OkStatus();
+}
 
 absl::Status RunMPPGraph() {
     std::string calculator_graph_config_contents;
@@ -69,15 +89,17 @@ absl::Status RunMPPGraph() {
     RET_CHECK(audio_file_path);
 
     LOG(INFO) << "Check if output txt file is provided.";
-    const bool output_file_path = !absl::GetFlag(FLAGS_output_text_path).empty();
+    const bool output_file_path = !absl::GetFlag(FLAGS_output_stream_file).empty();
     RET_CHECK(output_file_path);
 
     LOG(INFO) << "Start running the calculator graph.";
     ASSIGN_OR_RETURN(mediapipe::OutputStreamPoller poller,
                      graph.AddOutputStreamPoller(kOutputStream));
     MP_RETURN_IF_ERROR(graph.StartRun({}));
+    MP_RETURN_IF_ERROR(OutputStreamToLocalFile(poller));
 
     LOG(INFO) << "Start grabbing and processing frames.";
+    MP_RETURN_IF_ERROR(graph.WaitUntilDone());
 
     return absl::OkStatus();
 }
@@ -90,6 +112,7 @@ int main(int argc, char** argv) {
         LOG(ERROR) << "Failed to run the graph: " << run_status.message();
         return EXIT_FAILURE;
     } else {
+        LOG(INFO) << kOutputStream;
         LOG(INFO) << "Success!";
     }
     return EXIT_SUCCESS;

@@ -62,5 +62,5 @@ if __name__ == '__main__':
   flags.DEFINE_string('path_to_input_audio', '', 'Path to the input audio.')
   flags.DEFINE_integer('clip_start_time_sec', 0,
                        'Clip start timestamp in seconds')
-  flags.DEFINE_integer('clip_end_time_sec', 10, 'Clip end timestamp in seconds')
+  flags.DEFINE_integer('clip_end_time_sec', 5, 'Clip end timestamp in seconds')
   app.run(main)
