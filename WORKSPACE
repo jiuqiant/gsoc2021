@@ -162,6 +162,19 @@ http_archive(
 )
 
 http_archive(
+    name = "org_libzip",
+    build_file = "//third_party:libzip.BUILD",
+    sha256 = "a5d22f0c87a2625450eaa5e10db18b8ee4ef17042102d04c62e311993a2ba363",
+    strip_prefix = "libzip-rel-1-5-1",
+    urls = [
+        # Bazel does not like the official download link at libzip.org,
+        # so use the GitHub release tag.
+        "https://mirror.bazel.build/github.com/nih-at/libzip/archive/rel-1-5-1.zip",
+        "https://github.com/nih-at/libzip/archive/rel-1-5-1.zip",
+    ],
+)
+
+http_archive(
     name = "pybind11",
     urls = [
         "https://storage.googleapis.com/mirror.tensorflow.org/github.com/pybind/pybind11/archive/v2.4.3.tar.gz",
@@ -406,3 +419,15 @@ load("@org_tensorflow//tensorflow:workspace3.bzl", "tf_workspace3")
 tf_workspace3()
 load("@org_tensorflow//tensorflow:workspace2.bzl", "tf_workspace2")
 tf_workspace2()
+
+_TFLITE_SUPPORT_GIT_COMMIT = "0f5fa0ff703c793d9df019bff912269d0f5bfaea"
+_TFLITE_SUPPORT_SHA256 = "94324e0404c7401203124276cadb695d6f164e9ae614a5843eec68532036aaf5"
+http_archive(
+    name = "org_tensorflow_lite_support",
+    urls = [
+      "https://github.com/tensorflow/tflite-support/archive/%s.tar.gz" % _TFLITE_SUPPORT_GIT_COMMIT,
+    ],
+    strip_prefix = "tflite-support-%s" % _TFLITE_SUPPORT_GIT_COMMIT,
+    sha256 = _TFLITE_SUPPORT_SHA256,
+)
+

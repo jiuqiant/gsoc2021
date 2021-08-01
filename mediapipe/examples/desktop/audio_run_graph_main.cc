@@ -33,8 +33,7 @@ constexpr char kOutputStream[] = "output_text";
 ABSL_FLAG(std::string, calculator_graph_config_file, "",
           "Name of file containing text format CalculatorGraphConfig proto.");
 ABSL_FLAG(std::string, input_side_packets, "",
-          "Full path of video to load. "
-          "If not provided, attempt to use a mic.");
+          "Full path of audio wav file to load. ");
 
 ABSL_FLAG(std::string, output_stream_file, "",
           "The name of the local file to output all packets sent to "
@@ -45,9 +44,6 @@ absl::Status OutputStreamToLocalFile(mediapipe::OutputStreamPoller& poller) {
     mediapipe::Packet packet;
     while (poller.Next(&packet)) {
         std::string output_data;
-        // if (!absl::GetFlag(FLAGS_strip_timestamps)) {
-        //     absl::StrAppend(&output_data, packet.Timestamp().Value(), ",");
-        // }
         absl::StrAppend(&output_data, packet.Get<std::string>(), "\n");
         file << output_data;
     }
