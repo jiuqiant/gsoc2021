@@ -17,24 +17,12 @@ licenses(["notice"])
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "audio_classifier",
-    srcs = ["audio_classifier_lib.cc"],
-    hdrs = ["audio_classifier_lib.h"],
+    name = "tflite_task_audio_classifier_calculator",
+    srcs = ["tflite_task_audio_classifier_calculator.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         "@com_google_absl//absl/status",
         "@com_google_absl//absl/strings:str_format",
-        "@org_tensorflow_lite_support//tensorflow_lite_support/cc/port:status_macros",
-        "@org_tensorflow_lite_support//tensorflow_lite_support/cc/port:statusor",
-        "@org_tensorflow_lite_support//tensorflow_lite_support/cc/task/audio:audio_classifier",
-        "@org_tensorflow_lite_support//tensorflow_lite_support/cc/task/audio/core:audio_buffer",
-        "@org_tensorflow_lite_support//tensorflow_lite_support/cc/task/audio/proto:classifications_proto_inc",
-        "@org_tensorflow_lite_support//tensorflow_lite_support/cc/task/core:category",
-        "@org_tensorflow_lite_support//tensorflow_lite_support/examples/task/audio/desktop/wav:wav_io",
-    ] + select({
-        "@org_tensorflow_lite_support//tensorflow_lite_support/examples/task:darwinn_portable": [
-            "@org_tensorflow_lite_support//tensorflow_lite_support/acceleration/configuration:edgetpu_coral_plugin",
-        ],
-        "//conditions:default": [
-        ],
-    }),
+        "@org_tensorflow_lite_support//tensorflow_lite_support/examples/task/audio/desktop:audio_classifier_lib"
+    ],
 )
