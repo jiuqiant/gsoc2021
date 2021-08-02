@@ -407,6 +407,7 @@ http_archive(
     patches = [
         "@//third_party:org_tensorflow_compatibility_fixes.diff",
         "@//third_party:org_tensorflow_objc_cxx17.diff",
+        "@//third_party:rfft2d.patch",
     ],
     patch_args = [
         "-p1",
