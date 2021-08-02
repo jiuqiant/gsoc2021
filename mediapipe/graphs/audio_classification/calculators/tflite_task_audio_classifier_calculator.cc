@@ -16,7 +16,6 @@ limitations under the License.
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "audio_classifier.h"
 #include "mediapipe/framework/calculator_framework.h"
 #include "mediapipe/framework/formats/detection.pb.h"
 #include "tensorflow_lite_support/examples/task/audio/desktop/audio_classifier_lib.h"
