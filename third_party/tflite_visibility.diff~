@@ -1,0 +1,12 @@
+diff --git a/tensorflow_lite_support/examples/task/audio/desktop/BUILD b/tensorflow_lite_support/examples/task/audio/desktop/BUILD
+index 7c4840f..d4dc2e8 100644
+--- a/tensorflow_lite_support/examples/task/audio/desktop/BUILD
++++ b/tensorflow_lite_support/examples/task/audio/desktop/BUILD
+@@ -1,4 +1,4 @@
+ package(
+      default_visibility = [
+      -        "//tensorflow_lite_support:users",
+      +        "//visibility:public",
+           ],
+	        licenses = ["notice"],  # Apache 2.0
+		 )

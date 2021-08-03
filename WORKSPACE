@@ -407,7 +407,6 @@ http_archive(
     patches = [
         "@//third_party:org_tensorflow_compatibility_fixes.diff",
         "@//third_party:org_tensorflow_objc_cxx17.diff",
-        "@//third_party:rfft2d.patch",
     ],
     patch_args = [
         "-p1",
@@ -421,7 +420,17 @@ tf_workspace3()
 load("@org_tensorflow//tensorflow:workspace2.bzl", "tf_workspace2")
 tf_workspace2()
 
-_TFLITE_SUPPORT_GIT_COMMIT = "0f5fa0ff703c793d9df019bff912269d0f5bfaea"
+http_archive(
+    name = "com_google_glog",
+    sha256 = "1ee310e5d0a19b9d584a855000434bb724aa744745d5b8ab1855c85bff8a8e21",
+    strip_prefix = "glog-028d37889a1e80e8a07da1b8945ac706259e5fd8",
+    urls = [
+        "https://mirror.bazel.build/github.com/google/glog/archive/028d37889a1e80e8a07da1b8945ac706259e5fd8.tar.gz",
+        "https://github.com/google/glog/archive/028d37889a1e80e8a07da1b8945ac706259e5fd8.tar.gz",
+    ],
+)
+
+_TFLITE_SUPPORT_GIT_COMMIT = "f868ab0dd21d3e3c0a1e7cb07f335a62fd57204b"
 _TFLITE_SUPPORT_SHA256 = "94324e0404c7401203124276cadb695d6f164e9ae614a5843eec68532036aaf5"
 http_archive(
     name = "org_tensorflow_lite_support",
@@ -429,6 +438,12 @@ http_archive(
       "https://github.com/tensorflow/tflite-support/archive/%s.tar.gz" % _TFLITE_SUPPORT_GIT_COMMIT,
     ],
     strip_prefix = "tflite-support-%s" % _TFLITE_SUPPORT_GIT_COMMIT,
-    sha256 = _TFLITE_SUPPORT_SHA256,
+    patches = [
+        "@//third_party:tflite_visibility.diff",
+    ],
+    patch_args = [
+        "-p1",
+    ],
+#    sha256 = _TFLITE_SUPPORT_SHA256,
 )
 

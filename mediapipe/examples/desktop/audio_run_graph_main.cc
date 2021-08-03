@@ -28,28 +28,14 @@
 #include "mediapipe/framework/port/parse_text_proto.h"
 #include "mediapipe/framework/port/status.h"
 
-constexpr char kOutputStream[] = "output_text";
+constexpr char kOutput[] = "audio_class";
 
 ABSL_FLAG(std::string, calculator_graph_config_file, "",
           "Name of file containing text format CalculatorGraphConfig proto.");
 ABSL_FLAG(std::string, input_side_packets, "",
           "Full path of audio wav file to load. ");
-
 ABSL_FLAG(std::string, output_stream_file, "",
-          "The name of the local file to output all packets sent to "
-          "the stream specified with --output_stream. ");
-absl::Status OutputStreamToLocalFile(mediapipe::OutputStreamPoller& poller) {
-    std::ofstream file;
-    file.open(absl::GetFlag(FLAGS_output_stream_file));
-    mediapipe::Packet packet;
-    while (poller.Next(&packet)) {
-        std::string output_data;
-        absl::StrAppend(&output_data, packet.Get<std::string>(), "\n");
-        file << output_data;
-    }
-    file.close();
-    return absl::OkStatus();
-}
+          "The name of the local file to output all packets. ");
 
 absl::Status RunMPPGraph() {
     std::string calculator_graph_config_contents;
@@ -69,11 +55,8 @@ absl::Status RunMPPGraph() {
         std::vector<std::string> name_and_value = absl::StrSplit(kv_pair, '=');
         RET_CHECK(name_and_value.size() == 2);
         RET_CHECK(!mediapipe::ContainsKey(input_side_packets, name_and_value[0]));
-        std::string input_side_packet_contents;
-        MP_RETURN_IF_ERROR(mediapipe::file::GetContents(
-            name_and_value[1], &input_side_packet_contents));
         input_side_packets[name_and_value[0]] =
-            mediapipe::MakePacket<std::string>(input_side_packet_contents);
+            mediapipe::MakePacket<std::string>(name_and_value[1]);
     }
 
     LOG(INFO) << "Initialize the calculator graph.";
@@ -89,14 +72,12 @@ absl::Status RunMPPGraph() {
     RET_CHECK(output_file_path);
 
     LOG(INFO) << "Start running the calculator graph.";
-    ASSIGN_OR_RETURN(mediapipe::OutputStreamPoller poller,
-                     graph.AddOutputStreamPoller(kOutputStream));
-    MP_RETURN_IF_ERROR(graph.StartRun({}));
-    MP_RETURN_IF_ERROR(OutputStreamToLocalFile(poller));
-
-    LOG(INFO) << "Start grabbing and processing frames.";
-    MP_RETURN_IF_ERROR(graph.WaitUntilDone());
-
+    MP_RETURN_IF_ERROR(graph.Run({}));
+    ASSIGN_OR_RETURN(auto status_or_packet, graph.GetOutputSidePacket(kOutput));
+    std::ofstream file;
+    file.open(absl::GetFlag(FLAGS_output_stream_file));
+    file << absl::StrCat("Result:", status_or_packet.Get<std::string>(), "\n");
+    file.close();
     return absl::OkStatus();
 }
 
@@ -108,7 +89,6 @@ int main(int argc, char** argv) {
         LOG(ERROR) << "Failed to run the graph: " << run_status.message();
         return EXIT_FAILURE;
     } else {
-        LOG(INFO) << kOutputStream;
         LOG(INFO) << "Success!";
     }
     return EXIT_SUCCESS;

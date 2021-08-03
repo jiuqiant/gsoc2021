@@ -14,61 +14,55 @@ limitations under the License.
 #include <iostream>
 #include <limits>
 
-#include "absl/flags/flag.h"
-#include "absl/flags/parse.h"
 #include "mediapipe/framework/calculator_framework.h"
-#include "mediapipe/framework/formats/detection.pb.h"
 #include "tensorflow_lite_support/examples/task/audio/desktop/audio_classifier_lib.h"
 
 namespace mediapipe {
 
 class TfliteTaskAudioClassifierCalculator : public CalculatorBase {
   public:
-    TfliteTaskAudioClassifierCalculator() = default;
+   TfliteTaskAudioClassifierCalculator() = default;
 
-    static absl::Status GetContract(CalculatorContract* cc);
-    absl::Status Process(CalculatorContext* cc) override;
+   static absl::Status GetContract(CalculatorContract* cc);
+   absl::Status Open(CalculatorContext* cc) override;
+   absl::Status Process(CalculatorContext* cc) override {
+     return mediapipe::tool::StatusStop();
+   }
 };
 
 REGISTER_CALCULATOR(TfliteTaskAudioClassifierCalculator);
 
 absl::Status TfliteTaskAudioClassifierCalculator::GetContract(CalculatorContract* cc) {
     RET_CHECK(!cc->InputSidePackets().GetTags().empty());
-    RET_CHECK(!cc->Outputs().GetTags().empty());
-
-    cc->InputSidePackets().Tag("MODEL_PATH").Set<std::String>();
-    cc->InputSidePackets().Tag("DATA_PATH").Set<std::String>();
-    cc->Outputs().Tag("CLASS").Set<std::String>();
+    cc->InputSidePackets().Tag("MODEL_PATH").Set<std::string>();
+    cc->InputSidePackets().Tag("DATA_PATH").Set<std::string>();
+    cc->OutputSidePackets().Tag("CLASS").Set<std::string>();
 
     return absl::OkStatus();
 }
 
-absl::Status TfliteTaskAudioClassifierCalculator::Process(CalculatorContext* cc) {
+absl::Status TfliteTaskAudioClassifierCalculator::Open(CalculatorContext* cc) {
     const std::string& input_file_path =
         cc->InputSidePackets().Tag("DATA_PATH").Get<std::string>();
     const std::string& yamnet_model_path =
-        cc->InputSidePackets().Tag("MODEL_PATH").Get<std::String>();
+        cc->InputSidePackets().Tag("MODEL_PATH").Get<std::string>();
 
     const int min_score_thres = 0.5;
-
     //Start Classification
     auto result = tflite::task::audio::Classify(
-        yamnet_model_path, input_file_path, false);   //False for Coral Edge TPU not connected
-
+         yamnet_model_path, input_file_path, false);   //False for Coral Edge TPU not connected
     if (result.ok()) {
-        const tflite::task::audio::ClassificationResult& result_ = result.value();
-        const auto& head = result_.classifications(0);
-        const int score = head.classes(0).score();
-        const std::string classification = head.classes(0).class_name();
-
-        if (score >= min_score_thres) {
-            cc->Outputs().Tag("CLASS").Add(classification, cc->InputTimestamp());
-        }
-
+      const tflite::task::audio::ClassificationResult& result_ = result.value();
+      const auto& head = result_.classifications(0);
+      const int score = head.classes(0).score();
+      const std::string classification = head.classes(0).class_name();
+      if (score >= min_score_thres) {
+        cc->OutputSidePackets().Tag("CLASS").Set(MakePacket<std::string>(classification));
+      }
     } else {
         std::cerr << "Classification failed: " << result.status().message() << "\n";
-        return 1;
     }
+    return absl::OkStatus();
 }
 
 }   // namespace mediapipe
